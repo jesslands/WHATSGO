@@ -11,9 +11,9 @@ services:
       - "12021:12021"
     volumes:
       # Persistir la base de datos de sesiones
-      - /storage/whatsGO/sessions:/app/sessions
+      - ./sessions:/app/sessions
       # Si necesitas logs persistentes
-      - /storage/whatsGO/logs:/app/logs
+      - ./logs:/app/logs
     environment:
       # Puerto de la aplicación (ajustar según tu configuración)
       - PORT=12021
