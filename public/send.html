@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsGO - Enviar Mensajes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-green-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i class="fab fa-whatsapp text-3xl"></i>
+                    <h1 class="text-2xl font-bold">WhatsGO</h1>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="index.html" class="px-4 py-2 bg-green-700 rounded hover:bg-green-800 transition">
+                        <i class="fas fa-home mr-2"></i>Líneas
+                    </a>
+                    <a href="send.html" class="px-4 py-2 bg-green-700 rounded hover:bg-green-800 transition">
+                        <i class="fas fa-paper-plane mr-2"></i>Enviar Mensajes
+                    </a>
+                    <a href="stats.html" class="px-4 py-2 bg-green-700 rounded hover:bg-green-800 transition">
+                        <i class="fas fa-chart-bar mr-2"></i>Estadísticas
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+        <div class="grid md:grid-cols-2 gap-6">
+            <!-- Send with Specific Line -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">
+                    <i class="fas fa-phone-alt text-green-600 mr-2"></i>
+                    Enviar con Línea Específica
+                </h2>
+                <form onsubmit="sendMessageWithLine(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Línea</label>
+                        <select 
+                            id="lineSelect" 
+                            required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <option value="">Seleccionar línea...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Número Destino</label>
+                        <input 
+                            type="tel" 
+                            id="toNumber" 
+                            placeholder="571234567890"
+                            required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        />
+                        <p class="text-xs text-gray-500 mt-1">Incluye código de país (ej: 57 para Colombia)</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Mensaje</label>
+                        <select 
+                            id="messageType" 
+                            onchange="toggleMediaInput()"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <option value="text">Texto</option>
+                            <option value="image">Imagen</option>
+                            <option value="audio">Audio</option>
+                            <option value="voice">Nota de Voz</option>
+                            <option value="video">Video</option>
+                            <option value="document">Documento</option>
+                        </select>
+                    </div>
+                    <div id="textMessageDiv">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Mensaje</label>
+                        <textarea 
+                            id="message" 
+                            rows="4"
+                            placeholder="Escribe tu mensaje aquí..."
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"></textarea>
+                    </div>
+                    <div id="mediaInputDiv" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-upload mr-2"></i>Seleccionar Archivo
+                        </label>
+                        <input 
+                            type="file" 
+                            id="mediaFile"
+                            accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        />
+                        <p class="text-xs text-gray-500 mt-1">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Máximo 16MB
+                        </p>
+                        <div id="filePreview" class="mt-2 hidden">
+                            <p class="text-sm text-gray-600">
+                                <i class="fas fa-file mr-2"></i>
+                                <span id="fileName"></span>
+                                <span id="fileSize" class="text-xs text-gray-500"></span>
+                            </p>
+                        </div>
+                    </div>
+                    <div id="captionDiv" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Leyenda (opcional)</label>
+                        <input 
+                            type="text" 
+                            id="caption"
+                            placeholder="Agrega una descripción..."
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        />
+                    </div>
+                    <button 
+                        type="submit"
+                        class="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold">
+                        <i class="fas fa-paper-plane mr-2"></i>Enviar Mensaje
+                    </button>
+                </form>
+            </div>
+
+            <!-- Send with Auto Line -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold mb-4 text-gray-800">
+                    <i class="fas fa-magic text-purple-600 mr-2"></i>
+                    Enviar Automáticamente
+                </h2>
+                <div class="mb-4 p-4 bg-purple-50 rounded-lg">
+                    <p class="text-sm text-purple-800">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        El sistema seleccionará automáticamente una línea disponible para enviar el mensaje.
+                    </p>
+                </div>
+                <form onsubmit="sendMessageAuto(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Número Destino</label>
+                        <input 
+                            type="tel" 
+                            id="toNumberAuto" 
+                            placeholder="571234567890"
+                            required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        />
+                        <p class="text-xs text-gray-500 mt-1">Incluye código de país (ej: 57 para Colombia)</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Mensaje</label>
+                        <select 
+                            id="messageTypeAuto" 
+                            onchange="toggleMediaInputAuto()"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option value="text">Texto</option>
+                            <option value="image">Imagen</option>
+                            <option value="audio">Audio</option>
+                            <option value="voice">Nota de Voz</option>
+                            <option value="video">Video</option>
+                            <option value="document">Documento</option>
+                        </select>
+                    </div>
+                    <div id="textMessageDivAuto">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Mensaje</label>
+                        <textarea 
+                            id="messageAuto" 
+                            rows="4"
+                            placeholder="Escribe tu mensaje aquí..."
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+                    </div>
+                    <div id="mediaInputDivAuto" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-upload mr-2"></i>Seleccionar Archivo
+                        </label>
+                        <input 
+                            type="file" 
+                            id="mediaFileAuto"
+                            accept="image/*,audio/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        />
+                        <p class="text-xs text-gray-500 mt-1">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Máximo 16MB
+                        </p>
+                        <div id="filePreviewAuto" class="mt-2 hidden">
+                            <p class="text-sm text-gray-600">
+                                <i class="fas fa-file mr-2"></i>
+                                <span id="fileNameAuto"></span>
+                                <span id="fileSizeAuto" class="text-xs text-gray-500"></span>
+                            </p>
+                        </div>
+                    </div>
+                    <div id="captionDivAuto" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Leyenda (opcional)</label>
+                        <input 
+                            type="text" 
+                            id="captionAuto"
+                            placeholder="Agrega una descripción..."
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        />
+                    </div>
+                    <button 
+                        type="submit"
+                        class="w-full px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold">
+                        <i class="fas fa-magic mr-2"></i>Enviar Automáticamente
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Message History -->
+        <div class="mt-6 bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">
+                <i class="fas fa-history text-blue-600 mr-2"></i>
+                Historial de Envíos
+            </h2>
+            <div id="messageHistory" class="space-y-2">
+                <p class="text-gray-500 text-center py-8">No hay mensajes enviados aún</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="hidden fixed bottom-4 right-4 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg">
+        <p id="toastMessage"></p>
+    </div>
+
+    <script src="send.js"></script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+# Git
+.git
+.gitignore
+
+# Sessions (se montan como volumen)
+sessions/*.db
+
+# Logs
+logs/
+*.log
+
+# Development files
+*.http
+.vscode/
+.idea/
+
+# Docker files
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/

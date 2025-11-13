@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsGO - Panel de Control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-green-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i class="fab fa-whatsapp text-3xl"></i>
+                    <h1 class="text-2xl font-bold">WhatsGO</h1>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="index.html" class="px-4 py-2 bg-green-700 rounded hover:bg-green-800 transition">
+                        <i class="fas fa-home mr-2"></i>Líneas
+                    </a>
+                    <a href="send.html" class="px-4 py-2 bg-green-700 rounded hover:bg-green-800 transition">
+                        <i class="fas fa-paper-plane mr-2"></i>Enviar Mensajes
+                    </a>
+                    <a href="stats.html" class="px-4 py-2 bg-green-700 rounded hover:bg-green-800 transition">
+                        <i class="fas fa-chart-bar mr-2"></i>Estadísticas
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+        <!-- Add Line Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">
+                <i class="fas fa-plus-circle text-green-600 mr-2"></i>
+                Registrar Nueva Línea
+            </h2>
+            <div class="flex gap-4">
+                <input 
+                    type="text" 
+                    id="lineName" 
+                    placeholder="Nombre de la línea (ej: Línea Ventas)"
+                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+                <button 
+                    onclick="createLine()" 
+                    class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold">
+                    <i class="fas fa-plus mr-2"></i>Crear Línea
+                </button>
+            </div>
+        </div>
+
+        <!-- Lines List -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-bold mb-4 text-gray-800">
+                <i class="fas fa-list text-green-600 mr-2"></i>
+                Líneas Registradas
+            </h2>
+            <div id="linesList" class="space-y-4">
+                <!-- Lines will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Modal -->
+    <div id="qrModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Código QR</h3>
+                <button onclick="closeQRModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            <div id="qrContent" class="text-center">
+                <div class="animate-pulse">
+                    <div class="bg-gray-200 h-64 w-64 mx-auto rounded"></div>
+                    <p class="mt-4 text-gray-600">Generando código QR...</p>
+                </div>
+            </div>
+            <p class="mt-4 text-sm text-gray-600 text-center">
+                Escanea este código QR con WhatsApp para vincular la línea
+            </p>
+        </div>
+    </div>
+
+    <!-- Webhook Modal -->
+    <div id="webhookModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Configurar Webhook</h3>
+                <button onclick="closeWebhookModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">URL del Webhook</label>
+                    <input 
+                        type="url" 
+                        id="webhookUrl" 
+                        placeholder="https://tu-servidor.com/webhook"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                </div>
+                <button 
+                    onclick="saveWebhook()" 
+                    class="w-full px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold">
+                    <i class="fas fa-save mr-2"></i>Guardar Webhook
+                </button>
+            </div>
+            <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                <p class="text-sm text-blue-800">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    El webhook recibirá los mensajes entrantes con el formato:
+                </p>
+                <pre class="mt-2 text-xs bg-blue-100 p-2 rounded overflow-x-auto">{
+  "from": "521234567890@s.whatsapp.net",
+  "to": "521234567890@s.whatsapp.net",
+  "message": "Texto del mensaje",
+  "line_id": "line_123456"
+}</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Config Modal -->
+    <div id="configModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800">
+                    <i class="fas fa-cog mr-2 text-purple-600"></i>
+                    Configuración de Línea
+                </h3>
+                <button onclick="closeConfigModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-6">
+                <!-- Toggle Options -->
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-800">Permitir Llamadas</h4>
+                            <p class="text-sm text-gray-600">Permitir que esta línea reciba llamadas</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="configAllowCalls" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                        </label>
+                    </div>
+
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-800">Responder a Grupos</h4>
+                            <p class="text-sm text-gray-600">Procesar mensajes de grupos de WhatsApp</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="configRespondToGroups" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                        </label>
+                    </div>
+
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-800">Marcar como Leído</h4>
+                            <p class="text-sm text-gray-600">Marcar automáticamente los mensajes como leídos</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="configAutoMarkRead" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                        </label>
+                    </div>
+
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-800">Siempre en Línea</h4>
+                            <p class="text-sm text-gray-600">Mantener la presencia como "en línea"</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="configAlwaysOnline" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Auto Reply Message -->
+                <div class="p-4 bg-purple-50 rounded-lg">
+                    <label class="block font-semibold text-gray-800 mb-2">
+                        <i class="fas fa-reply mr-2 text-purple-600"></i>
+                        Mensaje de Respuesta Automática
+                    </label>
+                    <p class="text-sm text-gray-600 mb-3">Mensaje que se enviará automáticamente al recibir mensajes (opcional)</p>
+                    <textarea 
+                        id="configAutoReplyMsg" 
+                        rows="3"
+                        placeholder="Ej: Gracias por tu mensaje. Te responderemos pronto."
+                        class="w-full px-4 py-2 border border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+                    <p class="text-xs text-gray-500 mt-2">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Deja vacío para no enviar respuesta automática
+                    </p>
+                </div>
+
+                <!-- Save Button -->
+                <button 
+                    onclick="saveConfig()" 
+                    class="w-full px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold">
+                    <i class="fas fa-save mr-2"></i>Guardar Configuración
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
