@@ -21,6 +21,7 @@ import (
 	"github.com/skip2/go-qrcode"
 	"go.mau.fi/whatsmeow"
 	waProto "go.mau.fi/whatsmeow/binary/proto"
+	"go.mau.fi/whatsmeow/store"
 	"go.mau.fi/whatsmeow/store/sqlstore"
 	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
@@ -262,6 +263,9 @@ func loadExistingLines() error {
 			}
 		}
 
+		// Configurar dispositivo para evitar bans
+		configureDevice(deviceStore)
+
 		clientLog := waLog.Stdout("Client-"+id, "INFO", true)
 		client := whatsmeow.NewClient(deviceStore, clientLog)
 
@@ -326,6 +330,9 @@ func createLine(w http.ResponseWriter, r *http.Request) {
 
 	// Crear dispositivo
 	deviceStore := container.NewDevice()
+	// Configurar dispositivo para evitar bans
+	configureDevice(deviceStore)
+	
 	clientLog := waLog.Stdout("Client-"+lineID, "INFO", true)
 	client := whatsmeow.NewClient(deviceStore, clientLog)
 
@@ -802,32 +809,28 @@ func reconnectLine(w http.ResponseWriter, r *http.Request) {
 		line.Client.Disconnect()
 	}
 
-	// Crear nuevo cliente
-	deviceStore := container.NewDevice()
-	clientLog := waLog.Stdout("Client-"+lineID, "INFO", true)
-	newClient := whatsmeow.NewClient(deviceStore, clientLog)
-
-	// Actualizar cliente
-	line.Client = newClient
-	line.Status = "disconnected"
-	line.QRCode = ""
-	line.Available = false
-
-	// Configurar event handlers
-	newClient.AddEventHandler(func(evt interface{}) {
-		handleEvent(line, evt)
-	})
-
-	// Intentar conectar
+	// Reconectar
 	go connectLine(line)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{
-		"message": "Reconexión iniciada, generando nuevo código QR...",
+		"message": "Reconectando línea...",
 		"status":  "qr_pending",
-		"line_id": lineID,
 	})
 }
+
+// Configurar dispositivo con parámetros específicos para simular conexión legítima
+func configureDevice(device *store.Device) {
+	// Simular Google Chrome en Linux
+	// Usar SetOSInfo para establecer el nombre del sistema operativo y versión
+	// Versión específica solicitada: 2.3000.1028524044
+	store.SetOSInfo("Google Chrome (Linux)", [3]uint32{2, 3000, 1028524044})
+	
+	// El Platform se usa para el nombre del dispositivo en "Linked Devices"
+	device.Platform = "Google Chrome (Linux)"
+}
+
+
 
 // Enviar mensaje con línea específica
 func sendMessage(w http.ResponseWriter, r *http.Request) {
